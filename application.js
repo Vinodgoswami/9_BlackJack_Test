@@ -8,14 +8,20 @@ System.register([], function (_export, _context) {
         fetchWasm = _ref.fetchWasm;
     // NOTE: before here we shall not import any module!
     var promise = Promise.resolve();
+    promise = promise.then(function () {
+      return topLevelImport('wait-for-ammo-instantiation');
+    }).then(function (_ref2) {
+      var waitForAmmoInstantiation = _ref2["default"];
+      return waitForAmmoInstantiation(fetchWasm(''));
+    });
     return promise.then(function () {
       return _defineProperty({
         start: start
       }, 'import', topLevelImport);
     });
 
-    function start(_ref3) {
-      var findCanvas = _ref3.findCanvas;
+    function start(_ref4) {
+      var findCanvas = _ref4.findCanvas;
       var settings;
       var cc;
       return Promise.resolve().then(function () {
@@ -26,8 +32,6 @@ System.register([], function (_export, _context) {
       }).then(function () {
         settings = window._CCSettings;
         return initializeGame(cc, settings, findCanvas).then(function () {
-          if (!settings.renderPipeline) return cc.game.run();
-        }).then(function () {
           if (settings.scriptPackages) {
             return loadModulePacks(settings.scriptPackages);
           }
@@ -36,10 +40,9 @@ System.register([], function (_export, _context) {
         }).then(function () {
           return loadAssetBundle(settings.hasResourcesBundle, settings.hasStartSceneBundle);
         }).then(function () {
-          if (settings.renderPipeline) return cc.game.run();
-        }).then(function () {
-          cc.game.onStart = onGameStarted.bind(null, cc, settings);
-          onGameStarted(cc, settings);
+          return cc.game.run(function () {
+            return onGameStarted(cc, settings);
+          });
         });
       });
     }
@@ -166,7 +169,7 @@ System.register([], function (_export, _context) {
     var launchScene = settings.launchScene; // load scene
 
     cc.director.loadScene(launchScene, null, function () {
-      cc.view.setDesignResolutionSize(1080, 1440, 2);
+      cc.view.setDesignResolutionSize(1920, 1080, 2);
       console.log("Success to load scene: ".concat(launchScene));
     });
   }
